@@ -27,6 +27,7 @@ class ObjectDetection:
 		cv2.imshow('image',diff)
 		cv2.waitKey(0)
 		cv2.destroyAllWindows()
+		return diff
 		#flipped co-ords due to numpy blob detect
 
 	def template_detect(self, img, id):
