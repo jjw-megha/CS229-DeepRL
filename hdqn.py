@@ -34,7 +34,7 @@ class Hdqn:
         return np.argmax(action_prob)
 
     def select_goal(self, state):
-        return metacontroller.select_goal(state)
+        return meta_controller.select_goal(state)
 
     def criticize(self, goal, state):
         man_mask = object_detection.get_man_mask(state)
