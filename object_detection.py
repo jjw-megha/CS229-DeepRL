@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 
-class ObjectDetection:
+class object_detection:
 
-	def __init__(self, object_map):
+	def __init__(self):
 		self.colors = {'man': [200, 72, 72], 'skull': [236,236,236]}
 		self.threshold = {'key':0.8, 'door':0.9, 'ladder':0.8}
 
@@ -53,8 +53,7 @@ class ObjectDetection:
 
 
 def main():
-	obj_map = {'man':0, 'skull':1}
-	objDet = ObjectDetection(obj_map)
+	objDet = object_detection()
 	img_rgb = cv2.imread('templates/19.png')
 	img_score_section = img_rgb[15:20, 55:95, :]
 	img_game_section = img_rgb[30:,:,:]
