@@ -5,11 +5,10 @@ class ObjectDetection:
 
 	def __init__(self, object_map):
 		self.colors = {'man': [200, 72, 72], 'skull': [236,236,236]}
-		self.map = object_map
-
+		self.threshold = {'key':0.8, 'door':0.9, 'ladder':0.8}
 
 	def blob_detect(self, img, id):
-		mask = np.zeros(np.shape(img))
+		mask = np.zeros(img.shape, dtype = "uint8")
 		mask[:,:,0] = self.colors[id][0];
 		mask[:,:,1] = self.colors[id][1];
 		mask[:,:,2] = self.colors[id][2];
@@ -21,13 +20,7 @@ class ObjectDetection:
 		diff[indxs] = 255
 		mean_y = np.sum(indxs[0]) / np.shape(indxs[0])[0]
 		mean_x = np.sum(indxs[1]) / np.shape(indxs[1])[0]
-		# return diff
-		cv2.imshow('image',img)
-		cv2.waitKey(0)
-		cv2.imshow('image',diff)
-		cv2.waitKey(0)
-		cv2.destroyAllWindows()
-		return diff
+		return [diff]
 		#flipped co-ords due to numpy blob detect
 
 	def template_detect(self, img, id):
@@ -35,33 +28,45 @@ class ObjectDetection:
 		w = np.shape(template)[1]
 		h = np.shape(template)[0]
 		res = cv2.matchTemplate(img,template,cv2.TM_CCOEFF_NORMED)
-		threshold = 0.8
+		threshold = self.threshold[id]
 		loc = np.where( res >= threshold)
 		loc[0].setflags(write=True)
 		loc[1].setflags(write=True)
+		masks = []
 		for i in range(np.shape(loc[0])[0]):
-		  loc[0][i] += h/2; loc[1][i] += w/2
-		return loc, w, h
+			mask = np.zeros(img.shape, dtype = "uint8")
+			a = loc[0][i] ; b = loc[1][i] 
+		 	c = loc[0][i] + h; d = loc[1][i] + w
+		 	cv2.rectangle(mask, (b,a), (d,c), (255, 255, 255), -1)
+		 	masks.append(mask)
+		return masks
 
 
 	def detect_objects(self,img):
-
-
-	# def get_binary_mask(self, img, id):
-
-
-	# def get_all_binary_masks(self, img):
+		object_masks = {}
+		object_masks['man'] = self.blob_detect(img,'man')
+		object_masks['skull'] = self.blob_detect(img,'skull')
+		object_masks['key'] = self.template_detect(img,'key')
+		object_masks['door'] = self.template_detect(img,'door')
+		object_masks['ladder'] = self.template_detect(img,'ladder')	
+		return object_masks
 
 
 def main():
 	obj_map = {'man':0, 'skull':1}
 	objDet = ObjectDetection(obj_map)
-	img_rgb = cv2.imread('19.png')
+	img_rgb = cv2.imread('templates/19.png')
 	img_score_section = img_rgb[15:20, 55:95, :]
 	img_game_section = img_rgb[30:,:,:]
 
-	objDet.blob_detect(img_game_section, 'skull')
-	
+	# objDet.blob_detect(img_game_section, 'skull')
+	object_masks = objDet.detect_objects(img_game_section)
+	for key in object_masks.keys():
+		print key
+		for mask in object_masks[key]:
+			cv2.imshow('image',mask)
+			cv2.waitKey(0)
+			cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
