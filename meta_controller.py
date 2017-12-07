@@ -40,12 +40,15 @@ class Meta_Controller:
 	def update_state(self, new_state):
 		self.state = new_state
 
+	def getCurrentState(self):
+		return self.state
+
 	def got_key(self):
 		self.key_collected = True
 
 def main():
 	meta = Meta_Controller()
-	subgoal, subgoal_image = meta.getSubgoal()
+	subgoal, subgoal_image = meta.getSubgoal() 	
 	cv2.imshow('image',subgoal_image)
 	cv2.waitKey(0)
 	cv2.destroyAllWindows()
