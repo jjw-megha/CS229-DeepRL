@@ -11,7 +11,7 @@ class neural_network(nn.Module):
 		self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
 		self.fc1 = nn.Linear(64 * 3 * 3, 512)
 		self.fc2 = nn.Linear(512, actions)
-		
+
 
 	def forward(self, x):
 		x = F.relu(self.conv1(x))
@@ -28,3 +28,21 @@ class neural_network(nn.Module):
         for s in size:
             num_features *= s
         return num_features
+
+	def save_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
+        filepath = os.path.join(folder, filename)
+        if not os.path.exists(folder):
+            print("Checkpoint Directory does not exist! Making directory {}".format(folder))
+            os.mkdir(folder)
+        else:
+            print("Checkpoint Directory exists! ")
+        torch.save({
+            'state_dict' : self.state_dict(),
+        }, filepath)
+
+    def load_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
+        filepath = os.path.join(folder, filename)
+        if not os.path.exists(filepath):
+            raise("No model in path {}".format(checkpoint))
+        checkpoint = torch.load(filepath)
+        self.load_state_dict(checkpoint['state_dict'])
