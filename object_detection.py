@@ -74,9 +74,10 @@ class object_detection:
 		return img[::2, ::2]
 
 	def preprocess(self, img):
+		img = img[30:,:,:]
 		return self.to_grayscale(self.downsample(img))
 
-	def get_game_region(self,img):
+	def get_game_region(self, img):
 		return img[30:,:,:]
 
 def main():

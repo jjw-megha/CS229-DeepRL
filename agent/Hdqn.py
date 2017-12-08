@@ -12,6 +12,7 @@ from collections import namedtuple
 from meta_controller import meta_controller
 from object_detection import object_detection
 from dotdict import dotdict
+import copy
 
 default_args = dotdict({
 	'actor_epsilon': 0.9,
@@ -50,15 +51,21 @@ class Hdqn:
 			print "Exploring action"
 			return random.randrange(0, self.num_actions)
 			#print "Here ------>", self.actor(Variable(torch.from_numpy(vector).float())).data.numpy()
-
-		processed_frames = []
-		for frame in state:
-			processed_frames.append(self.object_detection.preprocess(frame))
-		processed_frames.append(self.object_detection.preprocess(goal))
+		# print len(state)
+		processed_frames = state
+		processed_frames.append(goal)
+		
 		input_vector = np.concatenate(processed_frames, axis=2)
 		print input_vector.shape
+		h_, w_, n_ = input_vector.shape
+		input_vector = input_vector.reshape((-1, n_, h_, w_))
+		# input_vector = np.expand_dims(input_vector,)
+		# print input_vector.shape
 		action_prob = self.actor(Variable(torch.from_numpy(input_vector).type(torch.FloatTensor), volatile=True)).data
-		print(action_prob)
+
+		print "Action_pro", action_prob
+		# raw_input()
+		# print(action_prob)
 		return np.argmax(action_prob)
 	'''
 	def select_goal(self, frame):
@@ -66,6 +73,7 @@ class Hdqn:
 	'''
 
 	def criticize(self, goal_mask, frame):
+		frame = self.object_detection.get_game_region(frame)
 		return self.object_detection.get_overlap(frame, goal_mask)
 
 	def store(self, experience):
@@ -79,8 +87,29 @@ class Hdqn:
 		self.update_number += 1
 
 		exps = [random.choice(list(self.memory)) for _ in range(self.batch_size)]
+		
+		print exps[0].state[0].shape , exps[0].goal.shape
+		histories = []
+		histories_next_state = []
+		for exp in exps:
+			state = copy.deepcopy(exp.state)
+			state.append(copy.deepcopy(exp.goal))
+			state = np.concatenate(state, axis=2)
+			
+			h_, w_, n_ = state.shape
+			state = state.reshape(( -1, n_, h_, w_))
+			histories.append(np.array(state))
 
-		state_vectors = np.squeeze(np.asarray([np.concatenate([exp.state, exp.goal], axis=2) for exp in exps]))
+			next_state = copy.deepcopy(exp.next_state)
+			next_state.append(copy.deepcopy(exp.goal))
+			next_state = np.concatenate(next_state, axis=2)
+			h_, w_, n_ = next_state.shape
+			next_state = next_state.reshape((-1, n_ , h_, w_))
+			histories_next_state.append(np.array(next_state))
+
+		
+		state_vectors = np.squeeze(np.array(histories, dtype = np.uint8))
+		print state_vectors.shape
 		state_vectors_var = Variable(torch.from_numpy(state_vectors).type(torch.FloatTensor))
 
 		action_batch = np.array([exp.action for exp in exps])
@@ -89,8 +118,9 @@ class Hdqn:
 		reward_batch = np.array([exp.reward for exp in exps])
 		reward_batch_var = Variable(torch.from_numpy(reward_batch).type(torch.FloatTensor))
 		#print "state_vectors", state_vectors
-		next_state_vectors = np.squeeze(np.asarray([np.concatenate([exp.next_state, exp.goal], axis=2) for exp in exps]))
+		next_state_vectors = np.squeeze(np.asarray(histories_next_state))
 		next_state_vectors_var = Variable(torch.from_numpy(next_state_vectors).type(torch.FloatTensor))
+
 
 		current_Q_values = self.actor(state_vectors_var)
 		next_state_Q_values = self.target_actor(next_state_vectors_var)

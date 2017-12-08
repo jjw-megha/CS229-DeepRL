@@ -8,6 +8,7 @@ from agent.Hdqn import Hdqn
 from meta_controller import meta_controller
 from object_detection import object_detection
 import cv2
+import copy 
 plt.style.use('ggplot')
 
 class Coach:
@@ -29,23 +30,27 @@ class Coach:
 
     def learn_subgoal(self):
 
-        action = self.agent.select_move(self.history, self.goal_mask, self.goal_idx[self.goal])
+        goal_mask = self.object_detection.to_grayscale(self.object_detection.downsample(self.goal_mask))
+        action = self.agent.select_move(list(self.history)[1:5], goal_mask, self.goal_idx[self.goal])
         print(str((self.meta.getCurrentState()   , self.env_actions[action])) + "; ")
 
-        next_frame, external_reward, done, _ = self.env.step(action)
-        next_frame = self.object_detection.get_game_region(next_frame)
-        self.history.append(next_frame)
+        next_frame , external_reward, done, _ = self.env.step(action)
+        next_frame_preprocessed = self.object_detection.preprocess(next_frame)
+        self.history.append(next_frame_preprocessed)
         if external_reward > 0:
             print "extrinsic_reward for goal", self.goal, " reward:", external_reward
+
+        print self.goal_mask.shape , next_frame.shape
         intrinsic_reward = self.agent.criticize(self.goal_mask, next_frame)
 
         goal_reached = (intrinsic_reward > 0)
         if goal_reached:
-            agent.goal_success[self.goal] += 1
-            print "Goal reached!! "
-        exp = self.ActorExperience(self.history[0:4], self.goal_mask, action, intrinsic_reward, self.history[1:5])
-        agent.store(exp)
-        agent.update()
+            print "Goal reached!! ", self.goal
+            self.meta.update_state(self.goal)
+        if len(self.history) == 5:
+            exp = self.ActorExperience(copy.deepcopy(list(self.history)[0:4]), goal_mask, action, intrinsic_reward, copy.deepcopy(list(self.history)[1:5]))
+            self.agent.store(exp)
+        self.agent.update()
         return external_reward, goal_reached
 
     def learn_global(self):
@@ -60,8 +65,7 @@ class Coach:
                 done = False
                 while not done:
                     frame = self.env.render(mode='rgb_array')
-                    # raw_input()
-                    frame = self.object_detection.get_game_region(frame)
+                    frame = self.object_detection.preprocess(frame)
                     self.history.append(frame)
                     self.goal, self.goal_mask = self.meta.getSubgoal()
                     self.stats['goal_selected'][self.goal_idx[self.goal]] += 1
@@ -69,7 +73,7 @@ class Coach:
                     goal_reached = False
                     while not done and not goal_reached:
                         external_reward, goal_reached = self.learn_subgoal()
-                        self.meta.update_state(self.goal)
+                        
                         total_external_reward += external_reward
                         episode_length += 1
                         if goal_reached:

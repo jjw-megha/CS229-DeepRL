@@ -6,10 +6,10 @@ import torch.nn.functional as F
 class neural_network(nn.Module):
 	def __init__(self, actions):
 		super(neural_network, self).__init__()
-		self.conv1 = nn.Conv2d(1, 32, 8, stride=4)
+		self.conv1 = nn.Conv2d(5, 32, 8, stride=4)
 		self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
 		self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
-		self.fc1 = nn.Linear(13440, 512)
+		self.fc1 = nn.Linear(2688, 512)
 		self.fc2 = nn.Linear(512, actions)
 
 
