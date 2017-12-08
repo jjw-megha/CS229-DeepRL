@@ -27,6 +27,7 @@ optimizer_spec = OptimizerSpec(constructor=optim.RMSprop,
 
 class Hdqn:
     def __init__(self, args=default_args):
+    	self.object_detection = object_detection()
 		self.actor_epsilon = args.actor_epsilon
 		self.gamma = args.gamma
 		self.batch_size = args.batch_size
@@ -54,7 +55,7 @@ class Hdqn:
     '''
 
     def criticize(self, goal_mask, frame):
-        return object_detection.getoverlap(frame, goal_mask)
+        return self.object_detection.get_overlap(frame, goal_mask)
 
 	def store(self, experience):
 		self.memory.append(experience)
