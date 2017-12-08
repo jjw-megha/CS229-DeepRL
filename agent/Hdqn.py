@@ -53,7 +53,6 @@ class Hdqn:
 
 		processed_frames = []
 		for frame in state:
-			frame = self.object_detection.get_game_region(frame)
 			processed_frames.append(self.object_detection.preprocess(frame))
 		processed_frames.append(self.object_detection.preprocess(goal))
 		input_vector = np.concatenate(processed_frames, axis=2)
