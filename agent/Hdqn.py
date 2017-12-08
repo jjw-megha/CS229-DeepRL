@@ -44,12 +44,16 @@ class Hdqn:
 
 	def select_move(self, state, goal, goal_value):
 		processed_frames = []
+		state_lst = list(state)
+
 		for frame in state:
-			processed_frames.append(object_detection.preprocess(frame))
+			print(frame.shape)
+			processed_frames.append(self.object_detection.preprocess(frame))
 
-		processsed_frames.append(object_detection.preprocess(goal))
+		processed_frames.append(self.object_detection.preprocess(goal))
 
-		input_vector = np.concatenate(processsed_frames, axis=2)
+		print(processed_frames)
+		input_vector = np.concatenate(processed_frames, axis=2)
 
 		if random.random() < self.actor_epsilon[goal_value]:
 			print "Exploring action"

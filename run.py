@@ -26,13 +26,13 @@ class Coach:
 
     def learn_subgoal(self):
 
-        action = agent.select_move(self.history, self.goal_mask, self.goal_idx[goal])
+        action = self.agent.select_move(self.history, self.goal_mask, self.goal_idx[self.goal])
         print(str((self.meta.get_state, self.env_actions(action))) + "; ")
         next_frame, external_reward, done, _ = self.env.step(action)
         self.history.append(next_frame)
         if external_reward > 0:
             print "extrinsic_reward for goal", self.goal, " reward:", external_reward
-        intrinsic_reward = agent.criticize(self.goal_mask, next_frame)
+        intrinsic_reward = self.agent.criticize(self.goal_mask, next_frame)
         goal_reached = (intrinsic_reward > 0)
         if goal_reached:
             agent.goal_success[self.goal] += 1
@@ -43,24 +43,24 @@ class Coach:
         return external_reward, goal_reached
 
     def learn_global(self):
-        print "Annealing factor: " + str(anneal_factor)
+        print "Annealing factor: " + str(self.anneal_factor)
         for num_episode in range(self.num_episodes):
                 self.history.clear()
                 total_external_reward = 0
                 episode_length = 0
                 print "\n\n### EPISODE "  + str(num_episode) + "###"
-                env.reset()
+                self.env.reset()
                 self.meta = meta_controller()
                 done = False
                 while not done:
-                    frame = env.render(mode='rgb_array')
+                    frame = self.env.render(mode='rgb_array')
                     self.history.append(frame)
-                    self.goal, self.goal_mask = meta.getSubgoal()
+                    self.goal, self.goal_mask = self.meta.getSubgoal()
                     self.stats['goal_selected'][self.goal_idx[self.goal]] += 1
                     print "\nNew Goal: "  + str(self.goal) + "\nState-Actions: "
                     goal_reached = False
                     while not done and not goal_reached:
-                        external_reward, goal_reached = learn_subgoal()
+                        external_reward, goal_reached = self.learn_subgoal()
                         self.meta.update_state(self.goal)
                         total_external_reward += external_reward
                         episode_length += 1

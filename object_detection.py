@@ -66,14 +66,14 @@ class object_detection:
 		total_bits = np.count_nonzero(man_mask)
 		return float(bits)/float(total_bits)
 
-	def to_grayscale(img):
+	def to_grayscale(self, img):
 		return np.mean(img, axis=2).astype(np.uint8)
 
-	def downsample(img):
+	def downsample(self, img):
 		return img[::2, ::2]
 
-	def preprocess(img):
-		return to_grayscale(downsample(img))
+	def preprocess(self, img):
+		return self.to_grayscale(self.downsample(img))
 
 def main():
 	objDet = object_detection()
