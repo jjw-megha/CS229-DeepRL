@@ -1,3 +1,4 @@
+from __future__ import division
 import cv2
 import numpy as np
 
@@ -14,6 +15,8 @@ class object_detection:
 		mask[:,:,2] = self.colors[id][2];
 
 		diff = img - mask
+		diff[:,:,0] = diff[:,:,1]
+		diff[:,:,2] = diff[:,:,1]
 		indxs = np.where(diff == 0)
 		diff[np.where(diff < 0)] = 0
 		diff[np.where(diff > 0)] = 0
@@ -51,21 +54,32 @@ class object_detection:
 		object_masks['ladder'] = self.template_detect(img,'ladder')	
 		return object_masks
 
+	def get_overlap(self,img,goal_mask):
+		man_mask = self.blob_detect(img,'man')
+		overlap = cv2.bitwise_and(man_mask[0], goal_mask)
+		cv2.imshow('image',overlap)
+		cv2.waitKey(0)
+		cv2.destroyAllWindows()
+		bits = np.count_nonzero(overlap)
+		total_bits = np.count_nonzero(man_mask)
+		return bits/total_bits
 
 def main():
 	objDet = object_detection()
 	img_rgb = cv2.imread('templates/19.png')
 	img_score_section = img_rgb[15:20, 55:95, :]
 	img_game_section = img_rgb[30:,:,:]
+	man_mask = objDet.blob_detect(img_game_section,'man')
+	print objDet.get_overlap(img_game_section,man_mask[0])
 
 	# objDet.blob_detect(img_game_section, 'skull')
-	object_masks = objDet.detect_objects(img_game_section)
-	for key in object_masks.keys():
-		print key
-		for mask in object_masks[key]:
-			cv2.imshow('image',mask)
-			cv2.waitKey(0)
-			cv2.destroyAllWindows()
+	# object_masks = objDet.detect_objects(img_game_section)
+	# for key in object_masks.keys():
+	# 	print key
+	# 	for mask in object_masks[key]:
+	# 		cv2.imshow('image',mask)
+	# 		cv2.waitKey(0)
+	# 		cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
