@@ -67,13 +67,16 @@ class object_detection:
 		return float(bits)/float(total_bits)
 
 	def to_grayscale(self, img):
-		return np.mean(img, axis=2).astype(np.uint8)
+		return np.mean(img, axis=2).astype(np.uint8).reshape(img.shape[0],img.shape[1],1)
 
 	def downsample(self, img):
 		return img[::2, ::2]
 
 	def preprocess(self, img):
 		return self.to_grayscale(self.downsample(img))
+
+	def get_game_region(self,img):
+		return img[30:,:,:]
 
 def main():
 	objDet = object_detection()

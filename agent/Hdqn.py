@@ -47,12 +47,14 @@ class Hdqn:
 		state_lst = list(state)
 
 		for frame in state:
-			print(frame.shape)
+			# print(frame.shape)
+			frame = self.object_detection.get_game_region(frame)
 			processed_frames.append(self.object_detection.preprocess(frame))
 
 		processed_frames.append(self.object_detection.preprocess(goal))
 
-		print(processed_frames)
+		for frame in processed_frames:
+			print(frame.shape)
 		input_vector = np.concatenate(processed_frames, axis=2)
 
 		if random.random() < self.actor_epsilon[goal_value]:
