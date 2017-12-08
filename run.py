@@ -7,6 +7,7 @@ from agent.Hdqn import Hdqn
 #from utils import plotting
 from meta_controller import meta_controller
 from object_detection import object_detection
+import cv2
 plt.style.use('ggplot')
 
 class Coach:
@@ -29,13 +30,15 @@ class Coach:
     def learn_subgoal(self):
 
         action = self.agent.select_move(self.history, self.goal_mask, self.goal_idx[self.goal])
-        print(str((self.meta.getCurrentState    , self.env_actions[action])) + "; ")
+        print(str((self.meta.getCurrentState()   , self.env_actions[action])) + "; ")
+
         next_frame, external_reward, done, _ = self.env.step(action)
         next_frame = self.object_detection.get_game_region(next_frame)
         self.history.append(next_frame)
         if external_reward > 0:
             print "extrinsic_reward for goal", self.goal, " reward:", external_reward
         intrinsic_reward = self.agent.criticize(self.goal_mask, next_frame)
+
         goal_reached = (intrinsic_reward > 0)
         if goal_reached:
             agent.goal_success[self.goal] += 1
@@ -57,6 +60,7 @@ class Coach:
                 done = False
                 while not done:
                     frame = self.env.render(mode='rgb_array')
+                    # raw_input()
                     frame = self.object_detection.get_game_region(frame)
                     self.history.append(frame)
                     self.goal, self.goal_mask = self.meta.getSubgoal()

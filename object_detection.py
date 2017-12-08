@@ -60,12 +60,12 @@ class object_detection:
 		man_mask = self.blob_detect(img,'man')
 		print(man_mask[0].shape, goal_mask.shape)
 		overlap = cv2.bitwise_and(man_mask[0], goal_mask)
-		cv2.imshow('image',overlap)
-		cv2.waitKey(0)
-		cv2.destroyAllWindows()
+		# cv2.imshow('image',overlap)
+		# cv2.waitKey(0)
+		# cv2.destroyAllWindows()
 		bits = np.count_nonzero(overlap)
 		total_bits = np.count_nonzero(man_mask)
-		return float(bits)/float(total_bits)
+		return float(bits)/float(total_bits) 
 
 	def to_grayscale(self, img):
 		return np.mean(img, axis=2).astype(np.uint8).reshape(img.shape[0],img.shape[1],1)
