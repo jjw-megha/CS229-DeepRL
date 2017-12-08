@@ -1,7 +1,7 @@
 from object_detection import object_detection
 import cv2
 
-class Meta_Controller:
+class meta_controller:
 
 	def __init__(self):
 		self.state = 'start'

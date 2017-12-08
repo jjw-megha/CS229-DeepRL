@@ -3,15 +3,15 @@ import matplotlib.pyplot as plt
 from collections import namedtuple, deque
 import gym
 from agent.Hdqn import Hdqn
-from utils.plotting import plot_episode_stats, plot_visited_states
-from utils import plotting
+#from utils.plotting import plot_episode_stats, plot_visited_states
+#from utils import plotting
 from meta_controller import meta_controller
 plt.style.use('ggplot')
 
 class Coach:
     def __init__(self):
         self.env = gym.make('MontezumaRevenge-v4')
-        self.env_actions = env.unwrapped.get_action_meanings()
+        self.env_actions = self.env.unwrapped.get_action_meanings()
         self.agent = Hdqn()
         self.goal = ''
         self.goal_mask = []
@@ -77,6 +77,11 @@ class Coach:
                     else:
                         self.agent.actor_epsilon[self.goal_idx[goal]] = 0.1
                     print "actor_epsilon " + str(goal) + ": " + str(self.agent.actor_epsilon[self.goal_idx[goal]])
+
+
+def main():
+    coach = Coach()
+    coach.learn_global()
 
 
 if __name__ == "__main__":

@@ -27,7 +27,9 @@ class object_detection:
 		#flipped co-ords due to numpy blob detect
 
 	def template_detect(self, img, id):
+
 		template = cv2.imread('templates/' + id + '.png')
+		
 		w = np.shape(template)[1]
 		h = np.shape(template)[0]
 		res = cv2.matchTemplate(img,template,cv2.TM_CCOEFF_NORMED)
@@ -39,9 +41,9 @@ class object_detection:
 		for i in range(np.shape(loc[0])[0]):
 			mask = np.zeros(img.shape, dtype = "uint8")
 			a = loc[0][i] ; b = loc[1][i] 
-		 	c = loc[0][i] + h; d = loc[1][i] + w
-		 	cv2.rectangle(mask, (b,a), (d,c), (255, 255, 255), -1)
-		 	masks.append(mask)
+			c = loc[0][i] + h; d = loc[1][i] + w
+			cv2.rectangle(mask, (b,a), (d,c), (255, 255, 255), -1)
+			masks.append(mask)
 		return masks
 
 
@@ -62,7 +64,16 @@ class object_detection:
 		cv2.destroyAllWindows()
 		bits = np.count_nonzero(overlap)
 		total_bits = np.count_nonzero(man_mask)
-		return bits/total_bits
+		return float(bits)/float(total_bits)
+
+	def to_grayscale(img):
+		return np.mean(img, axis=2).astype(np.uint8)
+
+	def downsample(img):
+		return img[::2, ::2]
+
+	def preprocess(img):
+		return to_grayscale(downsample(img))
 
 def main():
 	objDet = object_detection()
