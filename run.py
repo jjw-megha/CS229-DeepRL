@@ -6,6 +6,7 @@ from agent.Hdqn import Hdqn
 #from utils.plotting import plot_episode_stats, plot_visited_states
 #from utils import plotting
 from meta_controller import meta_controller
+from object_detection import object_detection
 plt.style.use('ggplot')
 
 class Coach:
@@ -23,12 +24,14 @@ class Coach:
         self.ActorExperience = namedtuple("ActorExperience", ["state", "goal", "action", "reward", "next_state"])
         self.stats = {'episode_rewards': np.zeros(self.num_episodes) , 'episode_length' : np.zeros(self.num_episodes), 'goal_selected': np.zeros(5), 'goal_success': np.zeros(5)}
         self.anneal_threshold = 0.9
+        self.object_detection = object_detection()
 
     def learn_subgoal(self):
 
         action = self.agent.select_move(self.history, self.goal_mask, self.goal_idx[self.goal])
-        print(str((self.meta.get_state, self.env_actions(action))) + "; ")
+        print(str((self.meta.getCurrentState    , self.env_actions[action])) + "; ")
         next_frame, external_reward, done, _ = self.env.step(action)
+        next_frame = self.object_detection.get_game_region(next_frame)
         self.history.append(next_frame)
         if external_reward > 0:
             print "extrinsic_reward for goal", self.goal, " reward:", external_reward
@@ -54,6 +57,7 @@ class Coach:
                 done = False
                 while not done:
                     frame = self.env.render(mode='rgb_array')
+                    frame = self.object_detection.get_game_region(frame)
                     self.history.append(frame)
                     self.goal, self.goal_mask = self.meta.getSubgoal()
                     self.stats['goal_selected'][self.goal_idx[self.goal]] += 1
