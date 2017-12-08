@@ -20,7 +20,8 @@ default_args = dotdict({
 	'num_actions':18,
 	'target_update' : 10000, #Number of iterations for annealing
 	'checkpoint' :'checkpoint1',
-	'maxlenOfQueue': 50000
+	'maxlenOfQueue': 50000,
+	'num_actions':18
 })
 
 OptimizerSpec = namedtuple("OptimizerSpec", ["constructor", "kwargs"])
@@ -29,8 +30,9 @@ optimizer_spec = OptimizerSpec(constructor=optim.RMSprop,
 
 class Hdqn:
 	def __init__(self, args=default_args):
+		self.num_actions = args.num_actions
 		self.object_detection = object_detection()
-		self.actor_epsilon = args.actor_epsilon
+		self.actor_epsilon = {0:0.9,1:0.9,2:0.9,3:0.9,4:0.9}
 		self.gamma = args.gamma
 		self.batch_size = args.batch_size
 		self.memory = deque([], maxlen=args.maxlenOfQueue)
@@ -43,25 +45,19 @@ class Hdqn:
 		self.checkpoint = default_args.checkpoint
 
 	def select_move(self, state, goal, goal_value):
-		processed_frames = []
-		state_lst = list(state)
+		
+		if random.random() < self.actor_epsilon[goal_value] or len(state) < 4:	
+			print "Exploring action"
+			return random.randrange(0, self.num_actions)
+			#print "Here ------>", self.actor(Variable(torch.from_numpy(vector).float())).data.numpy()
 
+		processed_frames = []
 		for frame in state:
-			# print(frame.shape)
 			frame = self.object_detection.get_game_region(frame)
 			processed_frames.append(self.object_detection.preprocess(frame))
-
 		processed_frames.append(self.object_detection.preprocess(goal))
-
-		for frame in processed_frames:
-			print(frame.shape)
 		input_vector = np.concatenate(processed_frames, axis=2)
-
-		if random.random() < self.actor_epsilon[goal_value]:
-			print "Exploring action"
-			return random.randrange(0, self.args.num_actions)
-			#print "Here ------>", self.actor(Variable(torch.from_numpy(vector).float())).data.numpy()
-		
+		print input_vector.shape
 		action_prob = self.actor(Variable(torch.from_numpy(input_vector).type(torch.FloatTensor), volatile=True)).data
 		print(action_prob)
 		return np.argmax(action_prob)
