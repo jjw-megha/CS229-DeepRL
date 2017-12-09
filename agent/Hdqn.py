@@ -27,6 +27,8 @@ default_args = dotdict({
 OptimizerSpec = namedtuple("OptimizerSpec", ["constructor", "kwargs"])
 optimizer_spec = OptimizerSpec(constructor=optim.RMSprop,
 	kwargs=dict(lr=0.00025, alpha=0.95, eps=1e-06),)
+use_cuda = torch.cuda.is_available()
+dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor 
 
 class Hdqn:
 	def __init__(self, args=default_args):
@@ -37,7 +39,11 @@ class Hdqn:
 		self.batch_size = args.batch_size
 		self.memory = deque([], maxlen=args.maxlenOfQueue)
 		self.actor = neural_network(args.num_actions)
+		if(use_cuda):
+			self.actor.cuda()
 		self.target_actor = neural_network(args.num_actions)
+		if(use_cuda):
+			self.target_actor.cuda()
 		self.actor_optimizer = optimizer_spec.constructor(self.actor.parameters(), **optimizer_spec.kwargs)
 		self.target_update = args.target_update
 		self.steps_since_last_update_target = 0
@@ -61,7 +67,7 @@ class Hdqn:
 		input_vector = input_vector.reshape((-1, n_, h_, w_))
 		# input_vector = np.expand_dims(input_vector,)
 		# print input_vector.shape
-		action_prob = self.actor(Variable(torch.from_numpy(input_vector).type(torch.FloatTensor), volatile=True)).data
+		action_prob = self.actor(Variable(torch.from_numpy(input_vector).type(dtype), volatile=True)).data
 
 		# print "Action_pro", action_prob
 		# raw_input()
@@ -112,16 +118,16 @@ class Hdqn:
 		
 		state_vectors = np.squeeze(np.array(histories, dtype = np.uint8))
 		# print state_vectors.shape
-		state_vectors_var = Variable(torch.from_numpy(state_vectors).type(torch.FloatTensor))
+		state_vectors_var = Variable(torch.from_numpy(state_vectors).type(dtype))
 
 		action_batch = np.array([exp.action for exp in exps])
 		action_batch_var = Variable(torch.from_numpy(action_batch).long())
 
 		reward_batch = np.array([exp.reward for exp in exps])
-		reward_batch_var = Variable(torch.from_numpy(reward_batch).type(torch.FloatTensor))
+		reward_batch_var = Variable(torch.from_numpy(reward_batch).type(dtype))
 		#print "state_vectors", state_vectors
 		next_state_vectors = np.squeeze(np.asarray(histories_next_state))
-		next_state_vectors_var = Variable(torch.from_numpy(next_state_vectors).type(torch.FloatTensor))
+		next_state_vectors_var = Variable(torch.from_numpy(next_state_vectors).type(dtype))
 
 
 		current_Q_values = torch.max(self.actor(state_vectors_var),dim=1)[0]
