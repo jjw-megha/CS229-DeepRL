@@ -66,7 +66,7 @@ class object_detection:
 		bits = np.count_nonzero(overlap)
 		total_bits = np.count_nonzero(man_mask)
 		# print "Overlap", float(bits)/float(total_bits)
-		return float(bits)/float(total_bits) > 0.9
+		return float(bits)/float(total_bits) > 0.80
 
 	def to_grayscale(self, img):
 		return np.mean(img, axis=2).astype(np.uint8).reshape(img.shape[0],img.shape[1],1)

@@ -18,7 +18,7 @@ default_args = dotdict({
 	'actor_epsilon': 0.9,
 	'gamma':0.9,
 	'batch_size':100,
-	'num_actions':10,
+	'num_actions':18,
 	'target_update' : 10000, #Number of iterations for annealing
 	'checkpoint' :'checkpoint1',
 	'maxlenOfQueue': 50000,
@@ -129,8 +129,7 @@ class Hdqn:
 		next_state_vectors = np.squeeze(np.asarray(histories_next_state))
 		next_state_vectors_var = Variable(torch.from_numpy(next_state_vectors).type(dtype))
 
-
-		current_Q_values = torch.max(self.actor(state_vectors_var),dim=1)[0]
+		current_Q_values = self.actor(state_vectors_var).gather(1, action_batch_var.unsqueeze(1))
 		next_state_Q_values = torch.max(self.target_actor(next_state_vectors_var),dim=1)[0]
 
 		# print reward_batch_var.size(), next_state_Q_values.size()
