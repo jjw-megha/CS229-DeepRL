@@ -42,14 +42,13 @@ class Coach:
         next_frame , external_reward, done, info = self.env.step(action)
         # print "Done", done, "Info : ", info['ale.lives']
         if info['ale.lives'] < self.ale_lives:
-
             self.ale_lives = info['ale.lives']
             print "Agent Died!!!! . Lives left : ", self.ale_lives
             self.meta.update_state('start')
             self.stats['goal_selected'][self.goal_idx[self.goal]] += 1
             self.goal, self.goal_mask = self.meta.getSubgoal() 
-        cv2.imshow('image', next_frame)
-        cv2.waitKey(10)
+        #cv2.imshow('image', next_frame)
+        #cv2.waitKey(10)
         # cv2.imshow('image', self.goal_mask)
         # cv2.waitKey(1)
         next_frame_preprocessed = self.object_detection.preprocess(next_frame)
@@ -79,6 +78,7 @@ class Coach:
         print "Annealing factor: " + str(self.anneal_factor)
         for num_episode in range(self.num_episodes):
                 self.history.clear()
+                self.ale_lives = 6
                 total_external_reward = 0
                 episode_length = 0
                 print "\n\n### EPISODE "  + str(num_episode) + "###"

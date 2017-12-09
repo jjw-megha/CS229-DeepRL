@@ -28,7 +28,8 @@ OptimizerSpec = namedtuple("OptimizerSpec", ["constructor", "kwargs"])
 optimizer_spec = OptimizerSpec(constructor=optim.RMSprop,
 	kwargs=dict(lr=0.00025, alpha=0.95, eps=1e-06),)
 use_cuda = torch.cuda.is_available()
-dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor 
+dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
+longtype = torch.cuda.LongTensor if use_cuda else torch.LongTensor
 
 class Hdqn:
 	def __init__(self, args=default_args):
@@ -121,7 +122,7 @@ class Hdqn:
 		state_vectors_var = Variable(torch.from_numpy(state_vectors).type(dtype))
 
 		action_batch = np.array([exp.action for exp in exps])
-		action_batch_var = Variable(torch.from_numpy(action_batch).long())
+		action_batch_var = Variable(torch.from_numpy(action_batch).type(longtype))
 
 		reward_batch = np.array([exp.reward for exp in exps])
 		reward_batch_var = Variable(torch.from_numpy(reward_batch).type(dtype))
