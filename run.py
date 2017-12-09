@@ -70,9 +70,9 @@ class Coach:
         self.agent.update()
         return external_reward, goal_reached, done
 
-    def annealing_schedule(self):
-        fraction  = min(float(self.time_steps) / self.schedule_timesteps, 1.0)
-        return self.initial_p + fraction * (self.final_p - self.initial_p)
+    # def annealing_schedule(self):
+    #     fraction  = min(float(self.time_steps) / self.schedule_timesteps, 1.0)
+    #     return self.initial_p + fraction * (self.final_p - self.initial_p)
 
     def learn_global(self):
         print "Annealing factor: " + str(self.anneal_factor)
@@ -112,8 +112,8 @@ class Coach:
                     if self.stats['goal_selected'][self.goal_idx[goal]] > 0:
                         print("Success Rate", self.stats['goal_success'][self.goal_idx[goal]], self.stats['goal_selected'][self.goal_idx[goal]], goal)
                         avg_success_rate = self.stats['goal_success'][self.goal_idx[goal]] / self.stats['goal_selected'][self.goal_idx[goal]]
-                        if avg_success_rate < self.anneal_threshold:
-                            self.agent.actor_epsilon[self.goal_idx[goal]] = self.annealing_schedule()
+                        if avg_success_rate < self.anneal_threshold or self.stats['goal_selected'][self.goal_idx[goal]] < 100:
+                            self.agent.actor_epsilon[self.goal_idx[goal]] -= self.anneal_factor
                             # self.agent.actor_epsilon[self.goal_idx[goal]] -= self.anneal_factor
                             # self.agent.actor_epsilon[self.goal_idx[goal]] = max(0.1, self.agent.actor_epsilon[self.goal_idx[goal]])
                         else:
