@@ -40,7 +40,7 @@ class Coach:
         if external_reward > 0:
             print "extrinsic_reward for goal", self.goal, " reward:", external_reward
 
-        print self.goal_mask.shape , next_frame.shape
+        # print self.goal_mask.shape , next_frame.shape
         intrinsic_reward = self.agent.criticize(self.goal_mask, next_frame)
 
         goal_reached = (intrinsic_reward > 0)

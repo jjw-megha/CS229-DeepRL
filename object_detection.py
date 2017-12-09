@@ -58,7 +58,7 @@ class object_detection:
 
 	def get_overlap(self,img,goal_mask):
 		man_mask = self.blob_detect(img,'man')
-		print(man_mask[0].shape, goal_mask.shape)
+		# print(man_mask[0].shape, goal_mask.shape)
 		overlap = cv2.bitwise_and(man_mask[0], goal_mask)
 		# cv2.imshow('image',overlap)
 		# cv2.waitKey(0)

@@ -127,7 +127,7 @@ class Hdqn:
 
 		# print reward_batch_var.size(), next_state_Q_values.size()
 		target_Q_values = reward_batch_var + (self.gamma * next_state_Q_values)
-		print target_Q_values.size(), current_Q_values.size()
+		# print target_Q_values.size(), current_Q_values.size()
 		criterion = self.actor.mse_loss
 		loss = criterion(current_Q_values, target_Q_values)
 

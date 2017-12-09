@@ -24,11 +24,22 @@ class meta_controller:
 
 	def getSubgoal(self):
 		if self.key_collected:
-			return ('door2', self.masks['door2'])
+			if self.state == 'start':
+				return ('door2',self.masks['door2'])
+			if self.state == 'ladder1':
+				return ('door2',self.masks['door2'])
+			if self.state == 'ladder2':
+				return ('ladder1',self.masks['ladder1'])
+			if self.state == 'ladder3':
+				return ('ladder2',self.masks['ladder2'])
+			if self.state == 'key':
+				return ('ladder3', self.masks['ladder3'])
+			return ('door2',self.masks['door2'])
+			
 		if self.state == 'start':
 			return ('ladder1',self.masks['ladder1'])
 		if self.state == 'ladder1':
-			return ('ladder1',self.masks['ladder2'])
+			return ('ladder2',self.masks['ladder2'])
 		if self.state == 'ladder2':
 			return ('ladder3',self.masks['ladder3'])
 		if self.state == 'ladder3':

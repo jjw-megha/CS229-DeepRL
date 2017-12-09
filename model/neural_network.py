@@ -15,16 +15,16 @@ class neural_network(nn.Module):
 
 
 	def forward(self, x):
-		print "in forward"
-		print x.size()
+		# print "in forward"
+		# print x.size()
 		x = F.relu(self.conv1(x))
-		print x.size()
+		# print x.size()
 		x = F.relu(self.conv2(x))
-		print x.size()
+		# print x.size()
 		x = F.relu(self.conv3(x))
-		print x.size()
+		# print x.size()
 		x = x.view(-1, self.num_flat_features(x))
-		print x.size()
+		# print x.size()
 		x = F.relu(self.fc1(x))
 		x = self.fc2(x)
 		return x
