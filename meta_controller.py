@@ -37,7 +37,7 @@ class meta_controller:
 			return ('door2',self.masks['door2'])
 			
 		if self.state == 'start':
-			return ('ladder1',self.masks['ladder1'])
+			return ('ladder2',self.masks['ladder2'])
 		if self.state == 'ladder1':
 			return ('ladder2',self.masks['ladder2'])
 		if self.state == 'ladder2':

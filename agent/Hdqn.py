@@ -74,7 +74,9 @@ class Hdqn:
 
 	def criticize(self, goal_mask, frame):
 		frame = self.object_detection.get_game_region(frame)
-		return self.object_detection.get_overlap(frame, goal_mask)
+		if self.object_detection.get_overlap(frame, goal_mask):
+			return 1
+		return 0
 
 	def store(self, experience):
 		self.memory.append(experience)
@@ -137,8 +139,8 @@ class Hdqn:
 			param.grad.data.clamp_(-1, 1)
 		self.actor_optimizer.step()
 
-		self.actor.save_checkpoint(self.checkpoint , 'checkpoint_'+str(self.update_number)+'.pth.tar')
 		if self.steps_since_last_update_target == self.target_update:
+			self.actor.save_checkpoint(self.checkpoint , 'checkpoint_'+str(self.update_number)+'.pth.tar')
 			# Update target
 			self.target_actor.load_checkpoint(self.checkpoint , 'checkpoint_'+str(self.update_number)+'.pth.tar')
 			self.steps_since_last_update_target = 0

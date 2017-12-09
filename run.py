@@ -35,6 +35,9 @@ class Coach:
         print(str((self.meta.getCurrentState()   , self.env_actions[action])) + "; ")
 
         next_frame , external_reward, done, _ = self.env.step(action)
+        print "Done", done
+        #cv2.imshow('image', next_frame)
+        #cv2.waitKey(1)
         next_frame_preprocessed = self.object_detection.preprocess(next_frame)
         self.history.append(next_frame_preprocessed)
         if external_reward > 0:
@@ -51,7 +54,7 @@ class Coach:
             exp = self.ActorExperience(copy.deepcopy(list(self.history)[0:4]), goal_mask, action, intrinsic_reward, copy.deepcopy(list(self.history)[1:5]))
             self.agent.store(exp)
         self.agent.update()
-        return external_reward, goal_reached
+        return external_reward, goal_reached, done
 
     def learn_global(self):
         print "Annealing factor: " + str(self.anneal_factor)
@@ -72,7 +75,7 @@ class Coach:
                     print "\nNew Goal: "  + str(self.goal) + "\nState-Actions: "
                     goal_reached = False
                     while not done and not goal_reached:
-                        external_reward, goal_reached = self.learn_subgoal()
+                        external_reward, goal_reached, done = self.learn_subgoal()
                         
                         total_external_reward += external_reward
                         episode_length += 1

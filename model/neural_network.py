@@ -10,18 +10,25 @@ class neural_network(nn.Module):
 		self.conv1 = nn.Conv2d(5, 32, 8, stride=4)
 		self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
 		self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
+
+		self.bn1 = nn.BatchNorm2d(32)
+		self.bn2 = nn.BatchNorm2d(64)
+		self.bn3 = nn.BatchNorm2d(64)
+
 		self.fc1 = nn.Linear(2688, 512)
+		nn.init.xavier_normal(self.fc1.state_dict()['weight'])
 		self.fc2 = nn.Linear(512, actions)
+		nn.init.xavier_normal(self.fc2.state_dict()['weight'])
 
 
 	def forward(self, x):
 		# print "in forward"
 		# print x.size()
-		x = F.relu(self.conv1(x))
+		x = F.relu(self.bn1(self.conv1(x)))
 		# print x.size()
-		x = F.relu(self.conv2(x))
+		x = F.relu(self.bn2(self.conv2(x)))
 		# print x.size()
-		x = F.relu(self.conv3(x))
+		x = F.relu(self.bn3(self.conv3(x)))
 		# print x.size()
 		x = x.view(-1, self.num_flat_features(x))
 		# print x.size()
