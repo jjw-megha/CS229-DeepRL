@@ -7,9 +7,9 @@ import os
 class neural_network(nn.Module):
 	def __init__(self, actions):
 		super(neural_network, self).__init__()
-		self.conv1 = nn.Conv2d(5, 32, 8, stride=4)
-		self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
-		self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
+		self.conv1 = nn.Conv2d(5, 32, kernel_size=8, stride=4)
+		self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
+		self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
 
 		self.bn1 = nn.BatchNorm2d(32)
 		self.bn2 = nn.BatchNorm2d(64)
@@ -30,7 +30,7 @@ class neural_network(nn.Module):
 		# print x.size()
 		x = F.relu(self.bn3(self.conv3(x)))
 		# print x.size()
-		x = x.view(-1, self.num_flat_features(x))
+		x = x.view(x.size(0), -1)
 		# print x.size()
 		x = F.relu(self.fc1(x))
 		x = self.fc2(x)

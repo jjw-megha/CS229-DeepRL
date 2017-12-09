@@ -16,7 +16,7 @@ import copy
 
 default_args = dotdict({
 	'actor_epsilon': 0.9,
-	'gamma':0.9,
+	'gamma':0.99,
 	'batch_size':100,
 	'num_actions':18,
 	'target_update' : 10000, #Number of iterations for annealing
@@ -130,13 +130,18 @@ class Hdqn:
 		next_state_vectors = np.squeeze(np.asarray(histories_next_state))
 		next_state_vectors_var = Variable(torch.from_numpy(next_state_vectors).type(dtype))
 
+		done_mask = np.array([exp.done for exp in exps])
+		not_done_mask = Variable(torch.from_numpy(1 - done_mask)).type(dtype)
+
+
 		current_Q_values = self.actor(state_vectors_var).gather(1, action_batch_var.unsqueeze(1))
-		next_state_Q_values = torch.max(self.target_actor(next_state_vectors_var),dim=1)[0]
+		next_state_Q_values = self.target_actor(next_state_vectors_var).detach().max(1)[0]
+		next_Q_values = not_done_mask * next_state_Q_values
 
 		# print reward_batch_var.size(), next_state_Q_values.size()
-		target_Q_values = reward_batch_var + (self.gamma * next_state_Q_values)
+		target_Q_values = reward_batch_var + (self.gamma * next_Q_values)
 		# print target_Q_values.size(), current_Q_values.size()
-		criterion = self.actor.mse_loss
+		criterion = F.smooth_l1_loss
 		loss = criterion(current_Q_values, target_Q_values)
 		print "Loss : ",loss.data[0]
 

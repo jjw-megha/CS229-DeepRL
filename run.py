@@ -23,7 +23,7 @@ class Coach:
         self.num_episodes = 5000
         self.anneal_factor = (1.0-0.1)/self.num_episodes
         self.goal_idx = {'ladder1':0,'ladder2':1,'ladder3':2,'key':3 ,'door2':4}
-        self.ActorExperience = namedtuple("ActorExperience", ["state", "goal", "action", "reward", "next_state"])
+        self.ActorExperience = namedtuple("ActorExperience", ["state", "goal", "action", "reward", "next_state", "done"])
         self.stats = {'episode_rewards': np.zeros(self.num_episodes) , 'episode_length' : np.zeros(self.num_episodes), 'goal_selected': np.zeros(5), 'goal_success': np.zeros(5)}
         self.anneal_threshold = 0.8
         self.ale_lives = 6
@@ -65,7 +65,7 @@ class Coach:
             self.meta.update_state(self.goal)
                 
         if len(self.history) == 5:
-            exp = self.ActorExperience(copy.deepcopy(list(self.history)[0:4]), goal_mask, action, intrinsic_reward, copy.deepcopy(list(self.history)[1:5]))
+            exp = self.ActorExperience(copy.deepcopy(list(self.history)[0:4]), goal_mask, action, intrinsic_reward, copy.deepcopy(list(self.history)[1:5]), done)
             self.agent.store(exp)
         self.agent.update()
         return external_reward, goal_reached, done
