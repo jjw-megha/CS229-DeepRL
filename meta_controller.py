@@ -18,8 +18,8 @@ class meta_controller:
 		masks['ladder1'] = object_masks['ladder'][0]
 		masks['ladder2'] = object_masks['ladder'][2]
 		masks['ladder3'] = object_masks['ladder'][1]
-		masks['key'] = object_masks['key'][0]
-		masks['door2'] = object_masks['door'][1]
+		masks['key'] = 	   object_masks['key'][0]
+		masks['door2'] =   object_masks['door'][1]
 		return masks
 
 	def getSubgoal(self):

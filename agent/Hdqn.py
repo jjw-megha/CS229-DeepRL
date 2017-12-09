@@ -56,14 +56,14 @@ class Hdqn:
 		processed_frames.append(goal)
 		
 		input_vector = np.concatenate(processed_frames, axis=2)
-		print input_vector.shape
+		# print input_vector.shape
 		h_, w_, n_ = input_vector.shape
 		input_vector = input_vector.reshape((-1, n_, h_, w_))
 		# input_vector = np.expand_dims(input_vector,)
 		# print input_vector.shape
 		action_prob = self.actor(Variable(torch.from_numpy(input_vector).type(torch.FloatTensor), volatile=True)).data
 
-		print "Action_pro", action_prob
+		# print "Action_pro", action_prob
 		# raw_input()
 		# print(action_prob)
 		return np.argmax(action_prob)
@@ -88,7 +88,7 @@ class Hdqn:
 
 		exps = [random.choice(list(self.memory)) for _ in range(self.batch_size)]
 		
-		print exps[0].state[0].shape , exps[0].goal.shape
+		# print exps[0].state[0].shape , exps[0].goal.shape
 		histories = []
 		histories_next_state = []
 		for exp in exps:
@@ -109,7 +109,7 @@ class Hdqn:
 
 		
 		state_vectors = np.squeeze(np.array(histories, dtype = np.uint8))
-		print state_vectors.shape
+		# print state_vectors.shape
 		state_vectors_var = Variable(torch.from_numpy(state_vectors).type(torch.FloatTensor))
 
 		action_batch = np.array([exp.action for exp in exps])
@@ -122,11 +122,13 @@ class Hdqn:
 		next_state_vectors_var = Variable(torch.from_numpy(next_state_vectors).type(torch.FloatTensor))
 
 
-		current_Q_values = self.actor(state_vectors_var)
-		next_state_Q_values = self.target_actor(next_state_vectors_var)
+		current_Q_values = torch.max(self.actor(state_vectors_var),dim=1)[0]
+		next_state_Q_values = torch.max(self.target_actor(next_state_vectors_var),dim=1)[0]
 
+		# print reward_batch_var.size(), next_state_Q_values.size()
 		target_Q_values = reward_batch_var + (self.gamma * next_state_Q_values)
-		criterion = nn.MSELoss()
+		print target_Q_values.size(), current_Q_values.size()
+		criterion = self.actor.mse_loss
 		loss = criterion(current_Q_values, target_Q_values)
 
 		self.actor_optimizer.zero_grad()
@@ -135,10 +137,10 @@ class Hdqn:
 			param.grad.data.clamp_(-1, 1)
 		self.actor_optimizer.step()
 
-		self.actor.save_checkpoint(self.checkpoint , 'checkpoint_'+self.update_number+'.pth.tar')
+		self.actor.save_checkpoint(self.checkpoint , 'checkpoint_'+str(self.update_number)+'.pth.tar')
 		if self.steps_since_last_update_target == self.target_update:
 			# Update target
-			self.target_actor.load_checkpoint(self.checkpoint , 'checkpoint_'+self.update_number+'.pth.tar')
+			self.target_actor.load_checkpoint(self.checkpoint , 'checkpoint_'+str(self.update_number)+'.pth.tar')
 			self.steps_since_last_update_target = 0
 		else:
 			self.steps_since_last_update_target += 1

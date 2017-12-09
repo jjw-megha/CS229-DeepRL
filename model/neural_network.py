@@ -2,6 +2,7 @@ import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
+import os
 
 class neural_network(nn.Module):
 	def __init__(self, actions):
@@ -29,7 +30,7 @@ class neural_network(nn.Module):
 		return x
 
 	def num_flat_features(self, x):
-		size = x.size()  # all dimensions except the batch dimension
+		size = x.size()[1:]  # all dimensions except the batch dimension
 		num_features = 1
 		for s in size:
 			num_features *= s
@@ -52,3 +53,6 @@ class neural_network(nn.Module):
 			raise("No model in path {}".format(checkpoint))
 		checkpoint = torch.load(filepath)
 		self.load_state_dict(checkpoint['state_dict'])
+
+	def mse_loss(self,input, target):
+		return torch.sum((input - target) ** 2) / input.data.nelement()
