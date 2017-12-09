@@ -20,6 +20,8 @@ class meta_controller:
 		masks['ladder3'] = object_masks['ladder'][1]
 		masks['key'] = 	   object_masks['key'][0]
 		masks['door2'] =   object_masks['door'][1]
+		# cv2.imshow('img',masks['ladder2'])
+		# cv2.waitKey()
 		return masks
 
 	def getSubgoal(self):
@@ -37,7 +39,7 @@ class meta_controller:
 			return ('door2',self.masks['door2'])
 			
 		if self.state == 'start':
-			return ('ladder2',self.masks['ladder2'])
+			return ('ladder1',self.masks['ladder1'])
 		if self.state == 'ladder1':
 			return ('ladder2',self.masks['ladder2'])
 		if self.state == 'ladder2':

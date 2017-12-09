@@ -26,6 +26,7 @@ class Coach:
         self.ActorExperience = namedtuple("ActorExperience", ["state", "goal", "action", "reward", "next_state"])
         self.stats = {'episode_rewards': np.zeros(self.num_episodes) , 'episode_length' : np.zeros(self.num_episodes), 'goal_selected': np.zeros(5), 'goal_success': np.zeros(5)}
         self.anneal_threshold = 0.9
+        self.ale_lives = 6
         self.object_detection = object_detection()
 
     def learn_subgoal(self):
@@ -34,10 +35,17 @@ class Coach:
         action = self.agent.select_move(list(self.history)[1:5], goal_mask, self.goal_idx[self.goal])
         print(str((self.meta.getCurrentState()   , self.env_actions[action])) + "; ")
 
-        next_frame , external_reward, done, _ = self.env.step(action)
-        print "Done", done
-        #cv2.imshow('image', next_frame)
-        #cv2.waitKey(1)
+        next_frame , external_reward, done, info = self.env.step(action)
+        # print "Done", done, "Info : ", info['ale.lives']
+        if info['ale.lives'] < self.ale_lives:
+
+            self.ale_lives = info['ale.lives']
+            print "Agent Died!!!! . Lives left : ", self.ale_lives
+            self.meta.update_state('start')
+        # cv2.imshow('image', next_frame)
+        # cv2.waitKey(1)
+        # cv2.imshow('image', self.goal_mask)
+        # cv2.waitKey(1)
         next_frame_preprocessed = self.object_detection.preprocess(next_frame)
         self.history.append(next_frame_preprocessed)
         if external_reward > 0:

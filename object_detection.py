@@ -40,7 +40,7 @@ class object_detection:
 		masks = []
 		for i in range(np.shape(loc[0])[0]):
 			mask = np.zeros(img.shape, dtype = "uint8")
-			a = loc[0][i] + h; b = loc[1][i] 
+			a = loc[0][i] ; b = loc[1][i] 
 			c = loc[0][i] + h; d = loc[1][i] + w
 			cv2.rectangle(mask, (b,a), (d,c), (255, 255, 255), -1)
 			masks.append(mask)
@@ -65,6 +65,7 @@ class object_detection:
 		# cv2.destroyAllWindows()
 		bits = np.count_nonzero(overlap)
 		total_bits = np.count_nonzero(man_mask)
+		# print "Overlap", float(bits)/float(total_bits)
 		return float(bits)/float(total_bits) > 0.9
 
 	def to_grayscale(self, img):

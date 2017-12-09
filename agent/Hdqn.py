@@ -18,11 +18,10 @@ default_args = dotdict({
 	'actor_epsilon': 0.9,
 	'gamma':0.9,
 	'batch_size':100,
-	'num_actions':18,
+	'num_actions':10,
 	'target_update' : 10000, #Number of iterations for annealing
 	'checkpoint' :'checkpoint1',
 	'maxlenOfQueue': 50000,
-	'num_actions':18
 })
 
 OptimizerSpec = namedtuple("OptimizerSpec", ["constructor", "kwargs"])
@@ -48,10 +47,11 @@ class Hdqn:
 	def select_move(self, state, goal, goal_value):
 		
 		if random.random() < self.actor_epsilon[goal_value] or len(state) < 4:	
-			print "Exploring action"
+			
 			return random.randrange(0, self.num_actions)
 			#print "Here ------>", self.actor(Variable(torch.from_numpy(vector).float())).data.numpy()
 		# print len(state)
+		print "Not exploring action"
 		processed_frames = state
 		processed_frames.append(goal)
 		
@@ -132,6 +132,7 @@ class Hdqn:
 		# print target_Q_values.size(), current_Q_values.size()
 		criterion = self.actor.mse_loss
 		loss = criterion(current_Q_values, target_Q_values)
+		print "Loss : ",loss.data[0]
 
 		self.actor_optimizer.zero_grad()
 		loss.backward()
