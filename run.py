@@ -33,7 +33,7 @@ class Coach:
 
         goal_mask = self.object_detection.to_grayscale(self.object_detection.downsample(self.goal_mask))
         action = self.agent.select_move(list(self.history)[1:5], goal_mask, self.goal_idx[self.goal])
-        print(str((self.meta.getCurrentState()   , self.env_actions[action])) + "; ")
+        print("GOAL", self.goal, str((self.meta.getCurrentState()   , self.env_actions[action])) + "; ")
 
         next_frame , external_reward, done, info = self.env.step(action)
         # print "Done", done, "Info : ", info['ale.lives']
@@ -42,8 +42,9 @@ class Coach:
             self.ale_lives = info['ale.lives']
             print "Agent Died!!!! . Lives left : ", self.ale_lives
             self.meta.update_state('start')
-        # cv2.imshow('image', next_frame)
-        # cv2.waitKey(1)
+            self.goal = self.meta.getSubgoal()
+        cv2.imshow('image', next_frame)
+        cv2.waitKey(1)
         # cv2.imshow('image', self.goal_mask)
         # cv2.waitKey(1)
         next_frame_preprocessed = self.object_detection.preprocess(next_frame)
@@ -58,6 +59,7 @@ class Coach:
         if goal_reached:
             print "Goal reached!! ", self.goal
             self.meta.update_state(self.goal)
+                
         if len(self.history) == 5:
             exp = self.ActorExperience(copy.deepcopy(list(self.history)[0:4]), goal_mask, action, intrinsic_reward, copy.deepcopy(list(self.history)[1:5]))
             self.agent.store(exp)
