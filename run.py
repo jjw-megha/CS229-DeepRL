@@ -25,12 +25,12 @@ class Coach:
         self.goal_idx = {'ladder1':0,'ladder2':1,'ladder3':2,'key':3 ,'door2':4}
         self.ActorExperience = namedtuple("ActorExperience", ["state", "goal", "action", "reward", "next_state"])
         self.stats = {'episode_rewards': np.zeros(self.num_episodes) , 'episode_length' : np.zeros(self.num_episodes), 'goal_selected': np.zeros(5), 'goal_success': np.zeros(5)}
-        self.anneal_threshold = 0.9
+        self.anneal_threshold = 0.8
         self.ale_lives = 6
         self.object_detection = object_detection()
         self.initial_p = 1
         self.final_p = 0.1
-        self.schedule_timesteps = 5000000
+        self.schedule_timesteps = 50000
         self.time_steps = 0
 
     def learn_subgoal(self):
@@ -40,15 +40,15 @@ class Coach:
         print("GOAL", self.goal, str((self.meta.getCurrentState()   , self.env_actions[action])) + "; ")
 
         next_frame , external_reward, done, info = self.env.step(action)
-        # print "Done", done, "Info : ", info['ale.lives']
+        print "Done", done, "Info : ", info['ale.lives'], "ale_lives", self.ale_lives
         if info['ale.lives'] < self.ale_lives:
             self.ale_lives = info['ale.lives']
             print "Agent Died!!!! . Lives left : ", self.ale_lives
             self.meta.update_state('start')
             self.stats['goal_selected'][self.goal_idx[self.goal]] += 1
             self.goal, self.goal_mask = self.meta.getSubgoal() 
-        #cv2.imshow('image', next_frame)
-        #cv2.waitKey(10)
+        # cv2.imshow('image', next_frame)
+        # cv2.waitKey(10)
         # cv2.imshow('image', self.goal_mask)
         # cv2.waitKey(1)
         next_frame_preprocessed = self.object_detection.preprocess(next_frame)
@@ -107,17 +107,18 @@ class Coach:
 
                 print "annealing_schedule" , self.annealing_schedule()
                 for goal in self.goal_idx.keys():
-                    self.agent.actor_epsilon[self.goal_idx[goal]] = self.annealing_schedule()
+                    #self.agent.actor_epsilon[self.goal_idx[goal]] = self.annealing_schedule()
 
-                    # if self.stats['goal_selected'][self.goal_idx[goal]] > 0:
-                    #     print("Success Rate", self.stats['goal_success'][self.goal_idx[goal]], self.stats['goal_selected'][self.goal_idx[goal]], goal)
-                    #     avg_success_rate = self.stats['goal_success'][self.goal_idx[goal]] / self.stats['goal_selected'][self.goal_idx[goal]]
-                    #     if avg_success_rate < self.anneal_threshold:
-                    #         self.agent.actor_epsilon[self.goal_idx[goal]] -= self.anneal_factor
-                    #         self.agent.actor_epsilon[self.goal_idx[goal]] = max(0.1, self.agent.actor_epsilon[self.goal_idx[goal]])
-                    #     else:
-                    #         self.agent.actor_epsilon[self.goal_idx[goal]] = 0.30
-                    #     print "actor_epsilon " + str(goal) + ": " + str(self.agent.actor_epsilon[self.goal_idx[goal]])
+                    if self.stats['goal_selected'][self.goal_idx[goal]] > 0:
+                        print("Success Rate", self.stats['goal_success'][self.goal_idx[goal]], self.stats['goal_selected'][self.goal_idx[goal]], goal)
+                        avg_success_rate = self.stats['goal_success'][self.goal_idx[goal]] / self.stats['goal_selected'][self.goal_idx[goal]]
+                        if avg_success_rate < self.anneal_threshold:
+                            self.agent.actor_epsilon[self.goal_idx[goal]] = self.annealing_schedule()
+                            # self.agent.actor_epsilon[self.goal_idx[goal]] -= self.anneal_factor
+                            # self.agent.actor_epsilon[self.goal_idx[goal]] = max(0.1, self.agent.actor_epsilon[self.goal_idx[goal]])
+                        else:
+                            self.agent.actor_epsilon[self.goal_idx[goal]] = 0.1
+                        print "actor_epsilon " + str(goal) + ": " + str(self.agent.actor_epsilon[self.goal_idx[goal]])
 
 
 def main():
