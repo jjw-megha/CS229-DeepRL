@@ -102,6 +102,9 @@ class Coach:
                         episode_length += 1
                         if goal_reached:
                             self.stats['goal_success'][self.goal] += 1
+                            self.agent.actor_epsilon[self.goal] -= self.anneal_factor
+                            print "actor_epsilon " + str(self.goal) + ": " + str(self.agent.actor_epsilon[self.goal])
+
                 #Annealing
                 self.stats['episode_rewards'][num_episode] = total_external_reward
                 self.stats['episode_length'][num_episode] = episode_length
