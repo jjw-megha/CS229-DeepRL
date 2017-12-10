@@ -28,14 +28,14 @@ class meta_controller:
 		if self.key_collected:
 			if self.state == 'start':
 				return ('door2',self.masks['door2'])
-			if self.state == 'ladder1':
+			if self.state == 'ladder6':
 				return ('door2',self.masks['door2'])
-			if self.state == 'ladder2':
-				return ('ladder1',self.masks['ladder1'])
-			if self.state == 'ladder3':
-				return ('ladder2',self.masks['ladder2'])
+			if self.state == 'ladder5':
+				return ('ladder6',self.masks['ladder1'])
+			if self.state == 'ladder4':
+				return ('ladder5',self.masks['ladder2'])
 			if self.state == 'key':
-				return ('ladder3', self.masks['ladder3'])
+				return ('ladder4', self.masks['ladder3'])
 			return ('door2',self.masks['door2'])
 			
 		if self.state == 'start':

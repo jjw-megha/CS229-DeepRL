@@ -35,7 +35,7 @@ class Hdqn:
 	def __init__(self, args=default_args):
 		self.num_actions = args.num_actions
 		self.object_detection = object_detection()
-		self.actor_epsilon = {0:0.9,1:0.9,2:0.9,3:0.9,4:0.9}
+		self.actor_epsilon = {'ladder1':0.9,'ladder2':0.9,'ladder3':0.9,'ladder4':0.9,'ladder5':0.9,'ladder6':0.9,'door2':0.9,'key':0.9}
 		self.gamma = args.gamma
 		self.batch_size = args.batch_size
 		self.memory = deque([], maxlen=args.maxlenOfQueue)
