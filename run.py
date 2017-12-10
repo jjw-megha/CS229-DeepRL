@@ -11,6 +11,8 @@ import cv2
 import copy 
 plt.style.use('ggplot')
 
+
+     
 class Coach:
     def __init__(self):
         self.env = gym.make('MontezumaRevenge-v4')
@@ -23,7 +25,7 @@ class Coach:
         self.num_episodes = 5000
         self.anneal_factor = (1.0-0.1)/self.num_episodes
         self.ActorExperience = namedtuple("ActorExperience", ["state", "goal", "action", "reward", "next_state", "done"])
-        self.stats = {'episode_rewards': np.zeros(self.num_episodes) , 'episode_length' : np.zeros(self.num_episodes), 'goal_selected': np.zeros(5), 'goal_success': np.zeros(5)}
+        self.stats =  {'episode_rewards': np.zeros(self.num_episodes) , 'episode_length' : np.zeros(self.num_episodes), 'goal_selected': {}, 'goal_success':{}}  
         self.anneal_threshold = 0.8
         self.ale_lives = 6
         self.object_detection = object_detection()
@@ -68,6 +70,10 @@ class Coach:
         return external_reward, goal_reached, done
 
     def learn_global(self):
+        for goal in self.agent.actor_epsilon.keys():
+            if self.goal not in self.stats['goal_selected']:
+                self.stats['goal_selected'][goal] = 0
+                self.stats['goal_success'][goal] = 0
         print "Annealing factor: " + str(self.anneal_factor)
         for num_episode in range(self.num_episodes):
                 self.history.clear()
@@ -97,9 +103,11 @@ class Coach:
                 #Annealing
                 self.stats['episode_rewards'][num_episode] = total_external_reward
                 self.stats['episode_length'][num_episode] = episode_length
-
-                print "annealing_schedule" , self.annealing_schedule()
                 for goal in self.agent.actor_epsilon.keys():
+                    if self.goal not in self.stats['goal_selected']:
+                        self.stats['goal_selected'][self.goal] = 0
+                        self.stats['goal_success'][self.goal] = 0
+
                     if self.stats['goal_selected'][self.goal] > 0:
                         print("Success Rate", self.stats['goal_success'][self.goal], self.stats['goal_selected'][self.goal], goal)
                         avg_success_rate = self.stats['goal_success'][self.goal] / self.stats['goal_selected'][self.goal]
