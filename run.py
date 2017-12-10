@@ -66,7 +66,7 @@ class Coach:
             self.meta.update_state(self.goal)
                 
         if len(self.history) == 5:
-            exp = self.ActorExperience(copy.deepcopy(list(self.history)[0:4]), goal_mask, action, intrinsic_reward, copy.deepcopy(list(self.history)[1:5]), goal_reached)
+            exp = self.ActorExperience(copy.deepcopy(list(self.history)[0:4]), goal_mask, action, intrinsic_reward, copy.deepcopy(list(self.history)[1:5]), done)
             self.agent.store(exp)
         self.agent.update()
         return external_reward, goal_reached, done
