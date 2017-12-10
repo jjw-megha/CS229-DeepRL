@@ -55,6 +55,7 @@ class Hdqn:
 		self.steps_since_last_update_target = 0
 		self.update_number = 0
 		self.checkpoint = pickle_folder
+		self.subgoal_rewards = {'ladder1': 1,'ladder2': 1,'ladder3':5 ,'ladder4':5 ,'ladder5':5,'ladder6':5,'door2':15,'key':10}
 
 	def select_move(self, state, goal, goal_value):
 		
@@ -84,10 +85,10 @@ class Hdqn:
 		return meta_controller.select_goal()
 	'''
 
-	def criticize(self, goal_mask, frame):
+	def criticize(self, goal, goal_mask, frame):
 		frame = self.object_detection.get_game_region(frame)
 		if self.object_detection.get_overlap(frame, goal_mask):
-			return 1
+			return self.subgoal_rewards[goal]
 		return 0
 
 	def store(self, experience):

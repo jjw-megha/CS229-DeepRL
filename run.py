@@ -58,7 +58,7 @@ class Coach:
             print "Collected Key!!!"
             self.meta.got_key()
 
-        intrinsic_reward = self.agent.criticize(self.goal_mask, next_frame)
+        intrinsic_reward = self.agent.criticize(self.goal, self.goal_mask, next_frame)
         print("Intrinsic Reward", intrinsic_reward)
         goal_reached = (intrinsic_reward > 0)
         if goal_reached:
@@ -106,20 +106,20 @@ class Coach:
                 self.stats['episode_rewards'][num_episode] = total_external_reward
                 self.stats['episode_length'][num_episode] = episode_length
                 for goal in self.agent.actor_epsilon.keys():
-                    if self.goal not in self.stats['goal_selected']:
-                        self.stats['goal_selected'][self.goal] = 0
-                        self.stats['goal_success'][self.goal] = 0
+                    if goal not in self.stats['goal_selected']:
+                        self.stats['goal_selected'][goal] = 0
+                        self.stats['goal_success'][goal] = 0
 
-                    if self.stats['goal_selected'][self.goal] > 0:
-                        print("Success Rate", self.stats['goal_success'][self.goal], self.stats['goal_selected'][self.goal], goal)
-                        avg_success_rate = self.stats['goal_success'][self.goal] / self.stats['goal_selected'][self.goal]
-                        if avg_success_rate < self.anneal_threshold or self.stats['goal_selected'][self.goal] < 100:
-                            self.agent.actor_epsilon[self.goal] -= self.anneal_factor
+                    if self.stats['goal_selected'][goal] > 0:
+                        print("Success Rate", self.stats['goal_success'][goal], self.stats['goal_selected'][goal], goal)
+                        avg_success_rate = self.stats['goal_success'][goal] / self.stats['goal_selected'][goal]
+                        if avg_success_rate < self.anneal_threshold or self.stats['goal_selected'][goal] < 100:
+                            self.agent.actor_epsilon[goal] -= self.anneal_factor
                         else:
-                            self.agent.actor_epsilon[self.goal] = 0.1
+                            self.agent.actor_epsilon[goal] = 0.1
 
-                        self.agent.actor_epsilon[self.goal] = max(0.1, self.agent.actor_epsilon[self.goal])
-                        print "actor_epsilon " + str(goal) + ": " + str(self.agent.actor_epsilon[self.goal])
+                        self.agent.actor_epsilon[goal] = max(0.1, self.agent.actor_epsilon[goal])
+                        print "actor_epsilon " + str(goal) + ": " + str(self.agent.actor_epsilon[goal])
                 if num_episode % 2:
                     pkl.dump(self.stats, open(sys.argv[1]+"stats.pkl", 'wb'))
                 
