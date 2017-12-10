@@ -61,11 +61,12 @@ class Coach:
         print("Intrinsic Reward", intrinsic_reward)
         goal_reached = (intrinsic_reward > 0)
         if goal_reached:
+            #done = True
             print "Goal reached!! ", self.goal
             self.meta.update_state(self.goal)
                 
         if len(self.history) == 5:
-            exp = self.ActorExperience(copy.deepcopy(list(self.history)[0:4]), goal_mask, action, intrinsic_reward, copy.deepcopy(list(self.history)[1:5]), done)
+            exp = self.ActorExperience(copy.deepcopy(list(self.history)[0:4]), goal_mask, action, intrinsic_reward, copy.deepcopy(list(self.history)[1:5]), goal_reached)
             self.agent.store(exp)
         self.agent.update()
         return external_reward, goal_reached, done
