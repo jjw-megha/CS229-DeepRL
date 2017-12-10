@@ -55,6 +55,8 @@ class Coach:
         self.history.append(next_frame_preprocessed)
         if external_reward > 0:
             print "extrinsic_reward for goal", self.goal, " reward:", external_reward
+            print "Collected Key!!!"
+            self.meta.got_key()
 
         # print self.goal_mask.shape , next_frame.shape
         intrinsic_reward = self.agent.criticize(self.goal_mask, next_frame)
@@ -115,16 +117,18 @@ class Coach:
                         avg_success_rate = self.stats['goal_success'][self.goal_idx[goal]] / self.stats['goal_selected'][self.goal_idx[goal]]
                         if avg_success_rate < self.anneal_threshold or self.stats['goal_selected'][self.goal_idx[goal]] < 100:
                             self.agent.actor_epsilon[self.goal_idx[goal]] -= self.anneal_factor
-                            # self.agent.actor_epsilon[self.goal_idx[goal]] -= self.anneal_factor
-                            # self.agent.actor_epsilon[self.goal_idx[goal]] = max(0.1, self.agent.actor_epsilon[self.goal_idx[goal]])
                         else:
                             self.agent.actor_epsilon[self.goal_idx[goal]] = 0.1
+
+                        self.agent.actor_epsilon[self.goal_idx[goal]] = max(0.1, self.agent.actor_epsilon[self.goal_idx[goal]])
                         print "actor_epsilon " + str(goal) + ": " + str(self.agent.actor_epsilon[self.goal_idx[goal]])
 
 
 def main():
     coach = Coach()
     coach.learn_global()
+    self.agent.actor.save_checkpoint(self.checkpoint , 'checkpoint_final.pth.tar')
+
 
 
 if __name__ == "__main__":
