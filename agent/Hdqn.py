@@ -13,6 +13,7 @@ from meta_controller import meta_controller
 from object_detection import object_detection
 from dotdict import dotdict
 import copy
+import os 
 
 default_args = dotdict({
 	'actor_epsilon': 0.9,
@@ -28,11 +29,15 @@ OptimizerSpec = namedtuple("OptimizerSpec", ["constructor", "kwargs"])
 optimizer_spec = OptimizerSpec(constructor=optim.RMSprop,
 	kwargs=dict(lr=0.00025, alpha=0.95, eps=1e-06),)
 use_cuda = torch.cuda.is_available()
+
+if use_cuda:
+	os.environ['CUDA_VISIBLE_DEVICES'] = '12'
+
 dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
 longtype = torch.cuda.LongTensor if use_cuda else torch.LongTensor
 
 class Hdqn:
-	def __init__(self, args=default_args):
+	def __init__(self, pickle_folder, args=default_args):
 		self.num_actions = args.num_actions
 		self.object_detection = object_detection()
 		self.actor_epsilon = {'ladder1':0.9,'ladder2':0.9,'ladder3':0.9,'ladder4':0.9,'ladder5':0.9,'ladder6':0.9,'door2':0.9,'key':0.9}
@@ -49,7 +54,7 @@ class Hdqn:
 		self.target_update = args.target_update
 		self.steps_since_last_update_target = 0
 		self.update_number = 0
-		self.checkpoint = default_args.checkpoint
+		self.checkpoint = pickle_folder
 
 	def select_move(self, state, goal, goal_value):
 		

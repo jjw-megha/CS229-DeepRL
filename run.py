@@ -9,6 +9,8 @@ from meta_controller import meta_controller
 from object_detection import object_detection
 import cv2
 import copy 
+import pickle as pkl
+import sys
 plt.style.use('ggplot')
 
 
@@ -17,7 +19,7 @@ class Coach:
     def __init__(self):
         self.env = gym.make('MontezumaRevenge-v4')
         self.env_actions = self.env.unwrapped.get_action_meanings()
-        self.agent = Hdqn()
+        self.agent = Hdqn(sys.argv[1])
         self.goal = ''
         self.goal_mask = []
         self.meta = meta_controller()
@@ -118,12 +120,16 @@ class Coach:
 
                         self.agent.actor_epsilon[self.goal] = max(0.1, self.agent.actor_epsilon[self.goal])
                         print "actor_epsilon " + str(goal) + ": " + str(self.agent.actor_epsilon[self.goal])
+                if num_episode % 2:
+                    pkl.dump(self.stats, open(sys.argv[1]+"stats.pkl", 'wb'))
+                
 
 
 def main():
+
     coach = Coach()
     coach.learn_global()
-    self.agent.actor.save_checkpoint(self.checkpoint , 'checkpoint_final.pth.tar')
+    self.agent.actor.save_checkpoint(self.checkpoint, 'checkpoint_final.pth.tar')
 
 
 
