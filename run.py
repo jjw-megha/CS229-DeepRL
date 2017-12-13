@@ -50,6 +50,7 @@ class Coach:
             self.meta.update_state('start')           
             self.goal, self.goal_mask = self.meta.getSubgoal() 
             self.stats['goal_selected'][self.goal] += 1
+            self.history.clear()
 
         next_frame_preprocessed = self.object_detection.preprocess(next_frame)
         self.history.append(next_frame_preprocessed)
@@ -57,6 +58,9 @@ class Coach:
             print "extrinsic_reward for goal", self.goal, " reward:", external_reward
             print "Collected Key!!!"
             self.meta.got_key()
+            self.meta.update_state('key')  
+            self.goal, self.goal_mask = self.meta.getSubgoal() 
+            self.stats['goal_selected'][self.goal] += 1
 
         intrinsic_reward = self.agent.criticize(self.goal, self.goal_mask, next_frame)
         print("Intrinsic Reward", intrinsic_reward)
