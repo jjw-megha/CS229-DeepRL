@@ -52,8 +52,8 @@ class Coach:
 
 
 		next_frame , external_reward, done, info = self.env.step(action)
-		cv2.imshow('img',next_frame)
-		cv2.waitKey(1)
+		#cv2.imshow('img',next_frame)
+		#cv2.waitKey(1)
 		intrinsic_reward = self.agent.criticize(self.goal, self.goal_mask, next_frame)
 
 		if info['ale.lives'] < self.ale_lives:
