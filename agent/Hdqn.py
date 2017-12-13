@@ -19,9 +19,9 @@ import pickle
 default_args = dotdict({
 	'actor_epsilon': 0.9,
 	'gamma':0.99,
-	'batch_size':10,
+	'batch_size':30,
 	'num_actions':18,
-	'target_update' : 10, #Number of iterations for annealing
+	'target_update' : 1000, #Number of iterations for annealing
 	'checkpoint' :'checkpoint1',
 	'maxlenOfQueue': 50000,
 })
@@ -59,9 +59,9 @@ class Hdqn:
 		self.subgoal_rewards = {'ladder1': 1,'ladder2': 1,'ladder3':5 ,'ladder4':5 ,'ladder5':5,'ladder6':5,'door2':15,'key':10}
 
 	def select_move(self, state, goal, goal_value):
-		
-		if len(state) < 4:	
-			
+		if len(state) < 4:
+			return 5
+		if random.random() < self.actor_epsilon[goal_value]:
 			return random.randrange(0, self.num_actions)
 			#print "Here ------>", self.actor(Variable(torch.from_numpy(vector).float())).data.numpy()
 		# print len(state)

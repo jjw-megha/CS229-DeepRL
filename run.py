@@ -34,18 +34,19 @@ class Coach:
 		self.final_p = 0.1
 		self.schedule_timesteps = 50000
 		self.time_steps = 0
+		self.success_stats = {'ladder1': np.zeros(self.num_episodes),'ladder2': np.zeros(self.num_episodes),'ladder3':np.zeros(self.num_episodes) ,'ladder4':np.zeros(self.num_episodes) ,'ladder5':np.zeros(self.num_episodes),'ladder6':np.zeros(self.num_episodes),'door2':np.zeros(self.num_episodes),'key':np.zeros(self.num_episodes)}
 
 	def learn_subgoal(self):
 
 		goal_mask = self.object_detection.to_grayscale(self.object_detection.downsample(self.goal_mask))
 		action = self.agent.select_move(list(self.history)[1:5], goal_mask, self.goal)
 		print "action",action
-		action = int(raw_input())
-		while action>=18:
-			action = int(raw_input())
-		if action == -1: 
-			done = True
-			return 0, False, done
+		#action = int(raw_input())
+		#while action>=18:
+		#	action = int(raw_input())
+		#if action == -1: 
+		#	done = True
+		#	return 0, False, done
 
 		print("GOAL", self.goal, str((self.meta.getCurrentState()   , self.env_actions[action])) + "; ")
 
@@ -134,6 +135,7 @@ class Coach:
 				if self.stats['goal_selected'][goal] > 0:
 					print("Success Rate", self.stats['goal_success'][goal], self.stats['goal_selected'][goal], goal)
 					avg_success_rate = self.stats['goal_success'][goal] / self.stats['goal_selected'][goal]
+					self.success_stats[goal][num_episode] = avg_success_rate
 					if avg_success_rate < self.anneal_threshold or self.stats['goal_selected'][goal] < 100:
 						self.agent.actor_epsilon[goal] -= self.anneal_factor
 					else:
