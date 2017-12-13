@@ -13,14 +13,15 @@ from meta_controller import meta_controller
 from object_detection import object_detection
 from dotdict import dotdict
 import copy
-import os 
+import os
+import pickle 
 
 default_args = dotdict({
 	'actor_epsilon': 0.9,
 	'gamma':0.99,
-	'batch_size':100,
+	'batch_size':10,
 	'num_actions':18,
-	'target_update' : 10000, #Number of iterations for annealing
+	'target_update' : 10, #Number of iterations for annealing
 	'checkpoint' :'checkpoint1',
 	'maxlenOfQueue': 50000,
 })
@@ -59,7 +60,7 @@ class Hdqn:
 
 	def select_move(self, state, goal, goal_value):
 		
-		if random.random() < self.actor_epsilon[goal_value] or len(state) < 4:	
+		if len(state) < 4:	
 			
 			return random.randrange(0, self.num_actions)
 			#print "Here ------>", self.actor(Variable(torch.from_numpy(vector).float())).data.numpy()
@@ -74,9 +75,9 @@ class Hdqn:
 		input_vector = input_vector.reshape((-1, n_, h_, w_))
 		# input_vector = np.expand_dims(input_vector,)
 		# print input_vector.shape
-		action_prob = self.actor(Variable(torch.from_numpy(input_vector).type(dtype), volatile=True)).data
+		action_prob = self.actor(Variable(torch.from_numpy(input_vector).type(dtype), volatile=True)).data.numpy()
 
-		# print "Action_pro", action_prob
+		print "Action_pro", action_prob
 		# raw_input()
 		# print(action_prob)
 		return np.argmax(action_prob)
@@ -95,7 +96,7 @@ class Hdqn:
 		self.memory.append(experience)
 
 	def update(self):
-
+		print "MEMORY SIZE : ", len(self.memory)
 		if len(self.memory) < self.batch_size:
 			return
 
@@ -146,7 +147,8 @@ class Hdqn:
 
 		# print reward_batch_var.size(), next_state_Q_values.size()
 		target_Q_values = reward_batch_var + (self.gamma * next_Q_values)
-		# print target_Q_values.size(), current_Q_values.size()
+
+		print "QQQQQQQQQQQ", target_Q_values, current_Q_values
 		criterion = F.smooth_l1_loss
 		loss = criterion(current_Q_values, target_Q_values)
 		print "Loss : ",loss.data[0]
@@ -159,6 +161,7 @@ class Hdqn:
 
 		if self.steps_since_last_update_target == self.target_update:
 			self.actor.save_checkpoint(self.checkpoint , 'checkpoint_'+str(self.update_number)+'.pth.tar')
+			# pickle.dump(self.memory, open("memory.p","wb"))
 			# Update target
 			self.target_actor.load_checkpoint(self.checkpoint , 'checkpoint_'+str(self.update_number)+'.pth.tar')
 			self.steps_since_last_update_target = 0
