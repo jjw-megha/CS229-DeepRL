@@ -21,6 +21,5 @@
 ## the "meat" of the script
 
 #just print the name of this machine
-module load cudnn/6.0
-python LSTM.py 2017_11_17_slow --frac 1 --timesteps 5 --batchsize 100 --epochs 15
-python LSTM.py 2017_11_17_slow --frac 1 --timesteps 20 --batchsize 100 --epochs 15
+module load cudnn/7.5
+python run.py checkpoint
