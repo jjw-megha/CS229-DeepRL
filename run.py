@@ -60,7 +60,10 @@ class Coach:
 			print "AGENT DIED"
 			intrinsic_reward = -5
 			self.ale_lives = info['ale.lives']
-			done = True
+			self.meta.update_state("start")
+			self.goal, self.goal_mask = self.meta.getSubgoal()
+			self.stats['goal_selected'][self.goal] += 1
+			# done = True
 
 		if len(self.history) == 5:
 			exp = 	ActorExperience(copy.deepcopy(list(self.history)[0:4]), goal_mask, action, intrinsic_reward, copy.deepcopy(list(self.history)[1:5]), done)
@@ -144,9 +147,9 @@ class Coach:
 					self.agent.actor_epsilon[goal] = max(0.1, self.agent.actor_epsilon[goal])
 					print "actor_epsilon " + str(goal) + ": " + str(self.agent.actor_epsilon[goal])
 
-			pkl.dump(self.agent.memory, open("memory.p","w"))
-			if num_episode % 2:
-				pkl.dump(self.stats, open(sys.argv[1]+"stats.pkl", 'w'))
+			pkl.dump(self.stats, open(sys.argv[1]+"success_stats.pkl", 'w'))
+			pkl.dump(self.agent.memory, open(sys.argv[1]+"success_stats.pkl","w"))
+			pkl.dump(self.stats, open(sys.argv[1]+"stats.pkl", 'w'))
 				
 
 
