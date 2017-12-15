@@ -19,9 +19,9 @@ import pickle
 default_args = dotdict({
 	'actor_epsilon': 0.9,
 	'gamma':0.99,
-	'batch_size':10,
+	'batch_size':30,
 	'num_actions':18,
-	'target_update' : 10, #Number of iterations for annealing
+	'target_update' : 100, #Number of iterations for annealing
 	'checkpoint' :'checkpoint1',
 	'maxlenOfQueue': 50000,
 })
@@ -30,7 +30,7 @@ OptimizerSpec = namedtuple("OptimizerSpec", ["constructor", "kwargs"])
 optimizer_spec = OptimizerSpec(constructor=optim.RMSprop,
 	kwargs=dict(lr=0.00025, alpha=0.95, eps=1e-06),)
 use_cuda = torch.cuda.is_available()
-
+start_epsilon = 0.9
 if use_cuda:
 	os.environ['CUDA_VISIBLE_DEVICES'] = '12'
 
@@ -41,14 +41,18 @@ class Hdqn:
 	def __init__(self, pickle_folder, args=default_args):
 		self.num_actions = args.num_actions
 		self.object_detection = object_detection()
-		self.actor_epsilon = {'ladder1':0.9,'ladder2':0.9,'ladder3':0.9,'ladder4':0.9,'ladder5':0.9,'ladder6':0.9,'door2':0.9,'key':0.9}
+
+		self.actor_epsilon = {'ladder1':start_epsilon,'ladder2':start_epsilon,'ladder3':start_epsilon,'ladder4':start_epsilon,'ladder5':start_epsilon,'ladder6':start_epsilon,'door2':start_epsilon,'key':start_epsilon}
 		self.gamma = args.gamma
 		self.batch_size = args.batch_size
 		self.memory = deque([], maxlen=args.maxlenOfQueue)
+		# self.memory = pickle.load(open("memory_final_4.p","r"))
 		self.actor = neural_network(args.num_actions)
+		# self.actor.load_checkpoint("checkpoint_supervised_final","checkpoint_601.pth.tar")
 		if(use_cuda):
 			self.actor.cuda()
 		self.target_actor = neural_network(args.num_actions)
+		# self.target_actor.load_checkpoint("checkpoint_supervised_final","checkpoint_601.pth.tar")
 		if(use_cuda):
 			self.target_actor.cuda()
 		self.actor_optimizer = optimizer_spec.constructor(self.actor.parameters(), **optimizer_spec.kwargs)
@@ -60,8 +64,10 @@ class Hdqn:
 
 	def select_move(self, state, goal, goal_value):
 		
-		if len(state) < 4:	
-			
+		if len(state) < 4:			
+			return 5
+
+		if random.random() < self.actor_epsilon[goal_value]:
 			return random.randrange(0, self.num_actions)
 			#print "Here ------>", self.actor(Variable(torch.from_numpy(vector).float())).data.numpy()
 		# print len(state)
@@ -159,11 +165,10 @@ class Hdqn:
 			param.grad.data.clamp_(-1, 1)
 		self.actor_optimizer.step()
 
-		if self.steps_since_last_update_target == self.target_update:
+		if self.steps_since_last_update_target % self.target_update == 0:
 			self.actor.save_checkpoint(self.checkpoint , 'checkpoint_'+str(self.update_number)+'.pth.tar')
 			# pickle.dump(self.memory, open("memory.p","wb"))
 			# Update target
 			self.target_actor.load_checkpoint(self.checkpoint , 'checkpoint_'+str(self.update_number)+'.pth.tar')
-			self.steps_since_last_update_target = 0
-		else:
-			self.steps_since_last_update_target += 1
+	
+		self.steps_since_last_update_target += 1

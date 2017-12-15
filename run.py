@@ -13,6 +13,7 @@ import pickle as pkl
 import sys
 plt.style.use('ggplot')
 
+saved_frames = []
 
 ActorExperience = namedtuple("ActorExperience", ["state", "goal", "action", "reward", "next_state", "done"])   
 class Coach:
@@ -40,17 +41,20 @@ class Coach:
 		goal_mask = self.object_detection.to_grayscale(self.object_detection.downsample(self.goal_mask))
 		action = self.agent.select_move(list(self.history)[1:5], goal_mask, self.goal)
 		print "action",action
-		action = int(raw_input())
+		# action = int(raw_input())
 		while action>=18:
 			action = int(raw_input())
 		if action == -1: 
 			done = True
 			return 0, False, done
 
+
+
 		print("GOAL", self.goal, str((self.meta.getCurrentState()   , self.env_actions[action])) + "; ")
 
 
 		next_frame , external_reward, done, info = self.env.step(action)
+		saved_frames.append(next_frame)
 		cv2.imshow('img',next_frame)
 		cv2.waitKey(1)
 		intrinsic_reward = self.agent.criticize(self.goal, self.goal_mask, next_frame)
@@ -59,11 +63,15 @@ class Coach:
 			print "AGENT DIED"
 			intrinsic_reward = -5
 			self.ale_lives = info['ale.lives']
-			done = True
+			# done = True
+			self.meta.update_state("start")
+			self.goal, self.goal_mask = self.meta.getSubgoal()
+			self.stats['goal_selected'][self.goal] += 1
+			# done = True
 
-		if len(self.history) == 5:
-			exp = 	ActorExperience(copy.deepcopy(list(self.history)[0:4]), goal_mask, action, intrinsic_reward, copy.deepcopy(list(self.history)[1:5]), done)
-			self.agent.store(exp)
+		# if len(self.history) == 5:
+		# 	exp = ActorExperience(copy.deepcopy(list(self.history)[0:4]), goal_mask, action, intrinsic_reward, copy.deepcopy(list(self.history)[1:5]), done)
+		# 	self.agent.store(exp)
 
 		
 		print "Done", done, "Info : ", info['ale.lives'], "ale_lives", self.ale_lives
@@ -83,9 +91,7 @@ class Coach:
 
 		if goal_reached:
 			print "Goal reached!! ", self.goal
-			self.meta.update_state(self.goal)
-				
-
+			self.meta.update_state(self.goal)				
 		self.agent.update()
 		return external_reward, goal_reached, done
 
@@ -123,6 +129,7 @@ class Coach:
 						self.agent.actor_epsilon[self.goal] -= self.anneal_factor
 						print "actor_epsilon " + str(self.goal) + ": " + str(self.agent.actor_epsilon[self.goal])
 
+			# pkl.dump(saved_frames, open("saveframes3.p","w"))
 			#Annealing
 			self.stats['episode_rewards'][num_episode] = total_external_reward
 			self.stats['episode_length'][num_episode] = episode_length
@@ -137,12 +144,12 @@ class Coach:
 					if avg_success_rate < self.anneal_threshold or self.stats['goal_selected'][goal] < 100:
 						self.agent.actor_epsilon[goal] -= self.anneal_factor
 					else:
-						self.agent.actor_epsilon[goal] = 0.1
+						self.agent.actor_epsilon[goal] = 0
 
-					self.agent.actor_epsilon[goal] = max(0.1, self.agent.actor_epsilon[goal])
+					self.agent.actor_epsilon[goal] = max(0, self.agent.actor_epsilon[goal])
 					print "actor_epsilon " + str(goal) + ": " + str(self.agent.actor_epsilon[goal])
 
-			pkl.dump(self.agent.memory, open("memory.p","w"))
+			# pkl.dump(self.agent.memory, open("memory_final_4.p","w"))
 			if num_episode % 2:
 				pkl.dump(self.stats, open(sys.argv[1]+"stats.pkl", 'w'))
 				
